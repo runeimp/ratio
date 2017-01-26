@@ -1,35 +1,42 @@
-#!/usr/bin/env jsdb
+#!/usr/bin/env node
 /*
 Ratio Calculator
 
 @author RuneImp <runeimp@gmail.com>
+@license MIT
 
 ChangeLog
 ---------
+2014-22-24  1.1.0      Updated using NodeJS
 2010-12-12  1.0.0      Initial script creation using JSDB
 */
-var args = jsArguments;
+
+var args = process.argv.slice(2),
+	max, min, mond,
+	platform = process.argv[0],
+	script = process.argv[1];
+
 if(args.length < 2)
 {
-	writeln();
-	writeln('Must supply two numbers to devine the ratio.');
-	writeln();
-	writeln('Output Example:');
-	writeln('    Ratio: 16:9 (divisor) or 1.777~');
-	writeln();
-	writeln('The last number is the larger argument divided by the smaller argument.');
-	writeln();
-	system.gc();
-	system.exit(1);
+	var msg = '\n';
+	msg += 'Must supply two numbers to devine the ratio.\n';
+	msg += '\n';
+	msg += 'Output Example:\n';
+	msg += '    Ratio: 16:9 (divisor) or 1.777~\n';
+	msg += '\n';
+	msg += 'The last number is the larger argument divided by the smaller argument.\n';
+	console.log(msg);
+	process.exit(1);
 }
 else
 {
-	writeln('Caclulating ratio of '+args[0]+'x'+args[1]);
+	console.log('\n    Caclulating ratio of '+args[0]+'×'+args[1]);
 }
 
-var max = Math.max(args[0], args[1]);
-var min = Math.min(args[0], args[1]);
-var mod = min;
+max = Math.max(args[0], args[1]);
+min = Math.min(args[0], args[1]);
+mod = min;
+points = max * min;
 
 while(mod > 0)
 {
@@ -45,8 +52,10 @@ while(mod > 0)
 			ratio = Math.floor(ratio * 1000) / 1000; // Remove the last digit
 			ratio += '~';
 		}
-		writeln('Ratio: '+rMax+':'+rMin+' ('+mod+') or '+ratio);
+		console.log('    Ratio: '+rMax+':'+rMin+' ('+mod+') or '+ratio);
+		console.log('    Points: '+points+'\n')
 		break;
 	}
 	mod--;
 }
+process.exit(0);
