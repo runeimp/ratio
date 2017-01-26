@@ -1,7 +1,7 @@
 Ratio Calculator
 ================
 
-A simply <abbr title="JavaScript Database">JSDB</abbr> script to calculate the ratio of two numbers. Such as the dimensions of an image or screen.
+A simple <abbr title="JavaScript Database">JSDB</abbr> script to calculate the ratio of two numbers. Such as the dimensions of an image or screen.
 
 
 Usage
