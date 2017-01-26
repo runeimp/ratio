@@ -1,3 +1,3 @@
 @ECHO OFF
 
-node ratio.js %*
+python3 ratio.py %*
