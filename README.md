@@ -32,6 +32,8 @@ $ ln -s ../repos/ratio/ratio.js ratio
 
 ### Windows
 
+Please note that this install method for Windows has NOT been tested in any way. I'm just riffing off the top of my head as a former Windows guy who still uses it for gaming and minor Windows specific projects. O:-)
+
 ```dos
 > CD \REPOS
 > git clone git@github.com:runeimp/ratio.git
