@@ -2,11 +2,15 @@
 """
 Ratio
 
+@see https://en.wikipedia.org/wiki/Display_resolution
+@see https://en.wikipedia.org/wiki/Graphics_display_resolution
 @license MIT
 
 
 ChangeLog
 ---------
+2017-01-28  1.3.1      Updated and added the specs for hqVGA, qqVGA, DVGA, WVGA,
+                       FWVGA, WSVGA, Wide PAL, WUXGA, 5k UHD, DCI 4K, and DCI 8K
 2017-01-26  1.3.0      Fixed minor bug and added EGA to display spec data
 2017-01-24  1.2.0      Updated using Python 3 and added display spec features
 2014-22-24  1.1.0      Updated using NodeJS
@@ -14,7 +18,7 @@ ChangeLog
 """
 
 # __all__ = []
-__version__ = '1.3.0'
+__version__ = '1.3.1'
 __author__ = 'RuneImp <runeimp@gmail.com>'
 
 import argparse
@@ -46,6 +50,7 @@ DISPLAY_SPEC = {
 	1.0: {              #    1:1
 		'spec': 'Square',
 		1024: 'Square', # 1024×1024
+		960: 'Square',  #  960×960
 		800: 'Square',  #  800×800
 		640: 'Square',  #  640×640
 		480: 'Square',  #  480×480
@@ -61,32 +66,37 @@ DISPLAY_SPEC = {
 		2560: 'QSXGA', # 2560×2048
 		1280: 'SXGA',  # 2560×2048
 	},
-	1.3333333333333333: { #    4:3
+	1.3333333333333333: {                         #    4:3
 		'spec': '4:3, NTSC, PAL, VGA',
-		2048: 'QXGA',     # 2048×1536
-		1600: 'UXGA',     # 1600×1200
-		1400: 'SXGA+',    # 1400×1050
-		1280: 'QVGA *',   # 1280×960 (non standard spec. Why is that?)
-		1152: 'XGA+',     # 1152×864
-		1024: 'XGA',      # 1024×768
-		800: 'SVGA',      #  800×600
-		768: 'PAL',       #  768×576
-		640: 'NTSC, VGA', #  640×480
-		320: 'qVGA',      #  320×240
+		2048: 'QXGA (Quad XGA)',                  # 2048×1536
+		1600: 'UXGA (Ultra XGA)',                 # 1600×1200
+		1400: 'SXGA+ (Super XGA+)',               # 1400×1050
+		1280: 'QVGA (Quad VGA)',                  # 1280×960 (non standard spec. Why is that?)
+		1152: 'XGA+',                             # 1152×864
+		1024: 'XGA (Extended Graphics Array)',    # 1024×768
+		800: 'SVGA (Super VGA)',                  #  800×600
+		768: 'PAL (Phase Alternating Line)',      #  768×576
+		640: 'NTSC, VGA (Video Graphics Array)',  #  640×480
+		320: 'qVGA (quarter VGA)',                #  320×240
+		160: 'qqVGA (quarter quarter VGA)',       #  160×120
 	},
-	1.5: {                #   3:2
-		'spec': '3:2, D1, HVGA',
-		720: 'D1, DVD',   # 720×480
-		480: 'HVGA',      # 480×320
+	1.5: {                               #   3:2
+		'spec': '3:2, D1, DVGA',
+		960: 'DVGA (Double-size VGA)',   # 960×640 Double-size VGA / Double HVGA
+		720: 'D1, DVD',                  # 720×480
+		480: 'HVGA (Half VGA)',          # 480×320 Half VGA
+		240: 'hqVGA (half quarter VGA)', # 240×160 half quarter VGA
 	},
-	1.6: {          #   8:5
-		'spec': '8:5, CGA',
-		320: 'CGA', # 320×200
+	1.6: {                                    #    8:5
+		'spec': '8:5, Wide',
+		1920: 'WUXGA (Widescreen Ultra XGA)', # 1920×1200
+		768: 'WVGA (Wide VGA)',               #  768×480
+		320: 'CGA (Computer Graphics Array)', #  320×200
 	},
-	1.6666666666666667: { #    5:3
+	1.6666666666666667: {         #    5:3
 		'spec': '5:3, WVGA',
-		1280: 'WXGA',     # 1280×768
-		800: 'WVGA',      #  800×480
+		1280: 'WXGA (Wide XGA)',  # 1280×768
+		800: 'WVGA (Wide VGA)',   #  800×480
 	},
 	1.7066666666666668: {
 		'spec': '128:75',
@@ -94,23 +104,28 @@ DISPLAY_SPEC = {
 	},
 	1.7777777777777777: {        #   16:9
 		'spec': '16:9, HD',
-		3840: '2160p, UHD-1',    # 3840×2160
-		2560: '1440p, WQHD',     # 2560×1440
-		1920: '1080p, FHD, XHD', # 1920×1080
-		1280: '720p, HD',        # 1280×720
-		1024: 'Wide PAL',        # 1024×576
-		854: 'WVGA, Wide NTSC',  #  854×480
+		7680: '4320p, 8K, UHD-2', # 7680×4320
+		5120: '2880p, 5K, UHD+',  # 5120×2880
+		3840: '2160p, 4K, UHD-1', # 3840×2160
+		2560: '1440p, WQHD',      # 2560×1440
+		1920: '1080p, FHD, XHD',  # 1920×1080
+		1280: '720p, HD',         # 1280×720
+		1024: 'WSVGA, Wide PAL',  # 1024×576
+	},
+	1.7791666666666666: {
+		'spec': '427:240, Full Wide',
+		854: 'FWVGA, Wide NTSC',  # 854×480
 	},
 	1.8285714285714285: { #  64:35
 		'spec': '64:35, EGA',
 		640: 'EGA',       # 640×350
 	},
 	1.8962962962962964: { # K Series
-		'spec': '256:135, #K',
-		8192: '8K',       # 8192×4320
-		4096: '4K',       # 4096×2160
-		2048: '2K',       # 2048×1080
-		1024: '1K',       # 1024×540
+		'spec': '256:135, DCI K',
+		8192: 'DCI 8K',   # 8192×4320
+		4096: 'DCI 4K',   # 4096×2160
+		2048: 'DCI 2K',   # 2048×1080
+		1024: 'DCI 1K',   # 1024×540
 	},
 	2.3333333333333335: { # 21:9
 		'spec': '21:9, Ultra Wide',
@@ -245,8 +260,8 @@ else:
 	if args.alternate:
 		print("    Ratios:   {}:{} | {}".format(ratio_w, ratio_h, ratio_o))
 	else:
-		# print("    Ratios:   {}:{} ({})".format(ratio_w, ratio_h, ratio_o))
-		print("    Ratios:   {}:{} ({}) {}".format(ratio_w, ratio_h, ratio_o, ratio_f))
+		print("    Ratios:   {}:{} ({})".format(ratio_w, ratio_h, ratio_o))
+		# print("    Ratios:   {}:{} ({}) {}".format(ratio_w, ratio_h, ratio_o, ratio_f))
 	print("    Divisor:  {}".format(ratio_d))
 	print("    Pixels:   {:,} or {:,.2f} MP".format(pixels, mega_pixels))
 	print("    Spec:     {}".format(get_display_spec(ratio_f, dim_w)))
