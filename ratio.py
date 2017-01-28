@@ -9,6 +9,7 @@ Ratio
 
 ChangeLog
 ---------
+2017-01-29  1.3.2      Added HXGA, WHXGA, HSXGA, WHSXGA, HUXGA, WHUXGA
 2017-01-28  1.3.1      Updated and added the specs for hqVGA, qqVGA, DVGA, WVGA,
                        FWVGA, WSVGA, Wide PAL, WUXGA, 5k UHD, DCI 4K, and DCI 8K
 2017-01-26  1.3.0      Fixed minor bug and added EGA to display spec data
@@ -18,9 +19,10 @@ ChangeLog
 """
 
 # __all__ = []
-__version__ = '1.3.1'
+__version__ = '1.3.2'
 __author__ = 'RuneImp <runeimp@gmail.com>'
 
+from string import Template
 import argparse
 import json
 import locale
@@ -42,32 +44,86 @@ APP_LABEL = "{} v{}".format(APP_NAME, __version__)
 # CONSTANTS
 #
 DIMENSIONS_RE = re.compile('([0-9]+)[^0-9]([0-9]+)')
-DISPLAY_SPEC = {
+DISPLAY_SPEC_BY_ID = {
+	'Betamax': {
+		'name': 'Betamax',
+		'height': 480,
+		'id': 'Betamax',
+		'ratio_f': 0.6666666666666666,
+		'ratio_x': '2:3',
+		'width': 320,
+	},
+	'CIF': {
+		'name': 'Common Interchange Format',
+		'height': 288,
+		'id': 'CIF',
+		'ratio_f': 1.2222222222222223,
+		'ratio_x': '11:9',
+		'width': 352,
+	},
+	'square': {
+		'name': 'square',
+		'height': 320,
+		'id': 'square',
+		'ratio_f': 1.0,
+		'ratio_x': '1:1',
+		'width': 320,
+	},
+	'SXGA': {
+		'name': 'Super Extended Graphics Array',
+		'height': 1024,
+		'id': 'SXGA',
+		'ratio_f': 1.25,
+		'ratio_x': '5:4',
+		'width': 1280,
+	},
+	'VHS': {
+		'name': 'Video Home System',
+		'height': 480,
+		'id': 'VHS',
+		'ratio_f': 0.6666666666666666,
+		'ratio_x': '2:3',
+		'width': 320,
+	},
+	# '____': {
+	# 	'name': '____',
+	# 	'height': ____,
+	# 	'id': '____',
+	# 	'ratio_f': ____,
+	# 	'ratio_x': '____',
+	# 	'width': ____,
+	# },
+}
+
+DISPLAY_SPEC_BY_RATIO = {
 	0.6666666666666666: {    #   2:3
 		'spec': '2:3, Analog Video Tape',
 		320: 'Betamax, VHS', # 320×480
 	},
 	1.0: {              #    1:1
-		'spec': 'Square',
-		1024: 'Square', # 1024×1024
-		960: 'Square',  #  960×960
-		800: 'Square',  #  800×800
-		640: 'Square',  #  640×640
-		480: 'Square',  #  480×480
-		320: 'Square',  #  320×320
-		240: 'Square',  #  240×240
+		'spec': 'square',
+		1024: 'square', # 1024×1024
+		960: 'square',  #  960×960
+		800: 'square',  #  800×800
+		640: 'square',  #  640×640
+		480: 'square',  #  480×480
+		320: 'square',  #  320×320
+		240: 'square',  #  240×240
 	},
 	1.2222222222222223: { #  11:9
 		'spec': '11:9',
 		352: 'CIF',       # 352×288
 	},
-	1.25: {            #    5:4
+	1.25: {                                      #    5:4
 		'spec': '5:4, SXGA',
-		2560: 'QSXGA', # 2560×2048
-		1280: 'SXGA',  # 2560×2048
+		5120: 'HSXGA (Hexadecatuple Super XGA)', # 5120×4096
+		2560: 'QSXGA (Quad Super XGA)',          # 2560×2048
+		1280: 'SXGA (Super XGA)',                # 1280×1024
 	},
 	1.3333333333333333: {                         #    4:3
 		'spec': '4:3, NTSC, PAL, VGA',
+		6400: 'HUXGA (Hexadecatuple Ultra XGA)',  # 6400×4800
+		4096: 'HXGA (Hexadecatuple XGA)',         # 4096×3072
 		2048: 'QXGA (Quad XGA)',                  # 2048×1536
 		1600: 'UXGA (Ultra XGA)',                 # 1600×1200
 		1400: 'SXGA+ (Super XGA+)',               # 1400×1050
@@ -87,11 +143,17 @@ DISPLAY_SPEC = {
 		480: 'HVGA (Half VGA)',          # 480×320 Half VGA
 		240: 'hqVGA (half quarter VGA)', # 240×160 half quarter VGA
 	},
-	1.6: {                                    #    8:5
+	1.5625: {                        #   25:16
+		'spec': '25:16',
+		6400: 'WHSXGA (Wide HSXGA)', # 6400×4096
+	},
+	1.6: {                                             #    8:5
 		'spec': '8:5, Wide',
-		1920: 'WUXGA (Widescreen Ultra XGA)', # 1920×1200
-		768: 'WVGA (Wide VGA)',               #  768×480
-		320: 'CGA (Computer Graphics Array)', #  320×200
+		7680: 'WHUXGA (Wide Hexadecatuple Ultra XGA)', # 7680×4800
+		5120: 'WHXGA (Wide HXGA)',                     # 5120×3200
+		1920: 'WUXGA (Widescreen Ultra XGA)',          # 1920×1200
+		768: 'WVGA (Wide VGA)',                        #  768×480
+		320: 'CGA (Computer Graphics Array)',          #  320×200
 	},
 	1.6666666666666667: {         #    5:3
 		'spec': '5:3, WVGA',
@@ -165,7 +227,7 @@ def close_to(ratio):
 	
 	tolerance = 1e-01
 	if ratio != 1 and math.isclose(ratio, 1.0, rel_tol=tolerance):
-		result = ('1:1', '1.000¯', 'Square')
+		result = ('1:1', '1.000¯', 'square')
 	elif ratio != 1.3333333333333333 and math.isclose(ratio, 1.3333333333333333, rel_tol=tolerance):
 		result = ('4:3', '1.333¯', 'NTSC, PAL, VGA')
 	elif ratio != 1.7777777777777777 and math.isclose(ratio, 1.7777777777777777, rel_tol=tolerance):
@@ -183,10 +245,10 @@ def get_display_spec(ratio, width):
 	"""Get the Display Spec"""
 	# print("get_spec() | width: {} | ratio: {}".format(width, ratio))
 
-	if ratio_f in DISPLAY_SPEC:
-		result = DISPLAY_SPEC[ratio_f]['spec']
-		if dim_w in DISPLAY_SPEC[ratio_f]:
-			result = DISPLAY_SPEC[ratio_f][dim_w]
+	if ratio_f in DISPLAY_SPEC_BY_RATIO:
+		result = DISPLAY_SPEC_BY_RATIO[ratio_f]['spec']
+		if dim_w in DISPLAY_SPEC_BY_RATIO[ratio_f]:
+			result = DISPLAY_SPEC_BY_RATIO[ratio_f][dim_w]
 	else:
 		result = 'unknown'
 
@@ -199,6 +261,7 @@ def get_display_spec(ratio, width):
 parser = argparse.ArgumentParser(add_help=False, description='Ratio: the ratio parser!', prefix_chars="-/", prog=APP_NAME)
 parser.add_argument('dimensions', nargs='+', help='dimensions to process')
 parser.add_argument('-a', '--alternate', '/alt', action='store_true', help='Use alternate output format')
+parser.add_argument('-d', '--debug', '/debug', action='store_true', help='Add debugging output')
 parser.add_argument('-h', '--help', '/help', action='help', help='Show this help message and exit')
 parser.add_argument('-j', '--json', '/json', action='store_true', help='Output as JSON')
 parser.add_argument('-v', '--version', '/ver', action='version', help="Show program's version number and exit", version='%(prog)s {}'.format(__version__))
@@ -216,17 +279,27 @@ if args_len == 0:
 	parser.parse_args('-h')
 	exit(1)
 elif args_len == 1:
-	match = DIMENSIONS_RE.match(args.dimensions[0])
-	# print("match: {} | {}:{}".format(match, match[1], match[2]))
-	dim_w = int(match[1])
-	dim_h = int(match[2])
+	if args.dimensions[0] in DISPLAY_SPEC_BY_ID:
+		data = DISPLAY_SPEC_BY_ID[args.dimensions[0]]
+		if args.json:
+			output = json.dumps(data)
+		else:
+			output = Template('\n    $id ($name)\n    Ratio: $ratio_x ($ratio_f)\n    Dimensions: $width×$height\n').substitute(data)
+		print(output)
+		exit(0)
+	else:
+		match = DIMENSIONS_RE.match(args.dimensions[0])
+		# print("match: {} | {}:{}".format(match, match[1], match[2]))
+		dim_w = int(match[1])
+		dim_h = int(match[2])
 else:
 	dim_w = int(args.dimensions[0])
 	dim_h = int(args.dimensions[1])
 
 ratio_f = dim_w / dim_h
 pixels = dim_w * dim_h
-mega_pixels = pixels / 1024 / 1024
+kila_pixels = pixels / 1024
+mega_pixels = kila_pixels / 1024
 ratio_r = int(ratio_f * 1000) / 1000
 ratio_d = math.gcd(dim_w, dim_h)
 ratio_w = int(dim_w / ratio_d)
@@ -260,10 +333,15 @@ else:
 	if args.alternate:
 		print("    Ratios:   {}:{} | {}".format(ratio_w, ratio_h, ratio_o))
 	else:
-		print("    Ratios:   {}:{} ({})".format(ratio_w, ratio_h, ratio_o))
-		# print("    Ratios:   {}:{} ({}) {}".format(ratio_w, ratio_h, ratio_o, ratio_f))
+		if args.debug:
+			print("    Ratios:   {}:{} ({}) {}".format(ratio_w, ratio_h, ratio_o, ratio_f))
+		else:
+			print("    Ratios:   {}:{} ({})".format(ratio_w, ratio_h, ratio_o))
 	print("    Divisor:  {}".format(ratio_d))
-	print("    Pixels:   {:,} or {:,.2f} MP".format(pixels, mega_pixels))
+	if pixels < 100000:
+		print("    Pixels:   {:,} or {:,.2f} KP".format(pixels, kila_pixels))
+	else:
+		print("    Pixels:   {:,} or {:,.2f} MP".format(pixels, mega_pixels))
 	print("    Spec:     {}".format(get_display_spec(ratio_f, dim_w)))
 	if is_close:
 		if args.alternate:
