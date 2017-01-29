@@ -9,6 +9,7 @@ Ratio
 
 ChangeLog
 ---------
+2017-01-29  1.3.3      Updated display spec and close to information
 2017-01-29  1.3.2      Added HXGA, WHXGA, HSXGA, WHSXGA, HUXGA, WHUXGA
 2017-01-28  1.3.1      Updated and added the specs for hqVGA, qqVGA, DVGA, WVGA,
                        FWVGA, WSVGA, Wide PAL, WUXGA, 5k UHD, DCI 4K, and DCI 8K
@@ -19,7 +20,7 @@ ChangeLog
 """
 
 # __all__ = []
-__version__ = '1.3.2'
+__version__ = '1.3.3'
 __author__ = 'RuneImp <runeimp@gmail.com>'
 
 from string import Template
@@ -61,6 +62,30 @@ DISPLAY_SPEC_BY_ID = {
 		'ratio_x': '11:9',
 		'width': 352,
 	},
+	'DCIF': {
+		'name': 'Double Common Interchange Format',
+		'height': 384,
+		'id': 'DCIF',
+		'ratio_f': 1.375,
+		'ratio_x': '11:8',
+		'width': 528,
+	},
+	'QCIF': {
+		'name': 'Quarter Common Interchange Format',
+		'height': 144,
+		'id': 'QCIF',
+		'ratio_f': 1.2222222222222223,
+		'ratio_x': '11:9',
+		'width': 176,
+	},
+	'SCIF': {
+		'name': 'Source Common Interchange Format [maybe]',
+		'height': 192,
+		'id': 'SCIF',
+		'ratio_f': 1.2222222222222223,
+		'ratio_x': '4:3',
+		'width': 256,
+	},
 	'square': {
 		'name': 'square',
 		'height': 320,
@@ -85,6 +110,14 @@ DISPLAY_SPEC_BY_ID = {
 		'ratio_x': '2:3',
 		'width': 320,
 	},
+	'XGA': {
+		'name': 'Extended Graphics Array',
+		'height': 768,
+		'id': 'XGA',
+		'ratio_f': 1.3333333333333333,
+		'ratio_x': '4:3',
+		'width': 1024,
+	},
 	# '____': {
 	# 	'name': '____',
 	# 	'height': ____,
@@ -100,19 +133,22 @@ DISPLAY_SPEC_BY_RATIO = {
 		'spec': '2:3, Analog Video Tape',
 		320: 'Betamax, VHS', # 320×480
 	},
-	1.0: {              #    1:1
+	1.0: {               #    1:1
 		'spec': 'square',
-		1024: 'square', # 1024×1024
-		960: 'square',  #  960×960
-		800: 'square',  #  800×800
-		640: 'square',  #  640×640
-		480: 'square',  #  480×480
-		320: 'square',  #  320×320
-		240: 'square',  #  240×240
+		1024: 'square',  # 1024×1024
+		960: 'square',   #  960×960
+		800: 'square',   #  800×800
+		640: 'square',   #  640×640
+		480: 'square',   #  480×480
+		320: 'square',   #  320×320
+		240: 'square',   #  240×240
 	},
-	1.2222222222222223: { #  11:9
+	1.2222222222222223: { #   11:9
 		'spec': '11:9',
-		352: 'CIF',       # 352×288
+		1408: '16CIF',    # 1408×1152
+		704: '4CIF',      #  704×480
+		352: 'CIF',       #  352×288
+		176: 'QCIF',      #  176×144
 	},
 	1.25: {                                      #    5:4
 		'spec': '5:4, SXGA',
@@ -124,7 +160,8 @@ DISPLAY_SPEC_BY_RATIO = {
 		'spec': '4:3, NTSC, PAL, VGA',
 		6400: 'HUXGA (Hexadecatuple Ultra XGA)',  # 6400×4800
 		4096: 'HXGA (Hexadecatuple XGA)',         # 4096×3072
-		2048: 'QXGA (Quad XGA)',                  # 2048×1536
+		2560: '5 MP CCTV',                        # 2560×1920
+		2048: 'QXGA (Quad XGA), 3 MP CCTV',       # 2048×1536
 		1600: 'UXGA (Ultra XGA)',                 # 1600×1200
 		1400: 'SXGA+ (Super XGA+)',               # 1400×1050
 		1280: 'QVGA (Quad VGA)',                  # 1280×960 (non standard spec. Why is that?)
@@ -134,7 +171,12 @@ DISPLAY_SPEC_BY_RATIO = {
 		768: 'PAL (Phase Alternating Line)',      #  768×576
 		640: 'NTSC, VGA (Video Graphics Array)',  #  640×480
 		320: 'qVGA (quarter VGA)',                #  320×240
+		256: 'SCIF',                              #  256x192
 		160: 'qqVGA (quarter quarter VGA)',       #  160×120
+	},
+	1.375: {         #  11:8
+		'spec': '11:8, DCIF',
+		528: 'DCIF', # 528×384
 	},
 	1.5: {                               #   3:2
 		'spec': '3:2, D1, DVGA',
@@ -189,6 +231,10 @@ DISPLAY_SPEC_BY_RATIO = {
 		2048: 'DCI 2K',   # 2048×1080
 		1024: 'DCI 1K',   # 1024×540
 	},
+	2.0: {
+		'spec': '2:1',
+		960: '960H', # 960×480
+	},
 	2.3333333333333335: { # 21:9
 		'spec': '21:9, Ultra Wide',
 	},
@@ -226,14 +272,20 @@ def close_to(ratio):
 	"""Returns the standard ratio the ratio is close too"""
 	
 	tolerance = 1e-01
-	if ratio != 1 and math.isclose(ratio, 1.0, rel_tol=tolerance):
+	if ratio != 0.6666666666666666 and math.isclose(ratio, 0.6666666666666666, rel_tol=tolerance):
+		result = ('2:3', '0.666¯', 'Analog Video Tape')
+	elif ratio != 1 and math.isclose(ratio, 1.0, rel_tol=tolerance):
 		result = ('1:1', '1.000¯', 'square')
+	elif ratio != 1.2222222222222223 and math.isclose(ratio, 1.2222222222222223, rel_tol=tolerance):
+		result = ('11:9', '1.222¯', 'CIF')
 	elif ratio != 1.3333333333333333 and math.isclose(ratio, 1.3333333333333333, rel_tol=tolerance):
 		result = ('4:3', '1.333¯', 'NTSC, PAL, VGA')
-	elif ratio != 1.7777777777777777 and math.isclose(ratio, 1.7777777777777777, rel_tol=tolerance):
-		result = ('16:9', '1.777¯', 'HD')
 	elif ratio != 1.5 and math.isclose(ratio, 1.5, rel_tol=tolerance):
 		result = ('3:2', '1.5000', 'D1')
+	elif ratio != 1.6 and math.isclose(ratio, 1.6, rel_tol=tolerance):
+		result = ('8:5', '1.6000', 'Wide')
+	elif ratio != 1.7777777777777777 and math.isclose(ratio, 1.7777777777777777, rel_tol=tolerance):
+		result = ('16:9', '1.777¯', 'HD')
 	elif ratio != 2.3333333333333335 and math.isclose(ratio, 2.3333333333333335, rel_tol=tolerance):
 		result = ('21:9', '2.333~', 'Ultra Wide')
 	else:
